@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OxyScale | Property Styling Workflow Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;
+  --surface:#18181b;
+  --surface-2:#1f1f23;
+  --emerald:#34d399;
+  --emerald-dim:rgba(52,211,153,0.15);
+  --emerald-border:rgba(52,211,153,0.2);
+  --text:#fafafa;
+  --muted:#a1a1aa;
+  --dim:#52525b;
+  --border:rgba(255,255,255,0.06);
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Geist',-apple-system,system-ui,sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.grid-bg{position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:64px 64px;z-index:0;-webkit-mask-image:radial-gradient(ellipse at top,black 30%,transparent 80%);mask-image:radial-gradient(ellipse at top,black 30%,transparent 80%)}
+.glow{position:fixed;top:-300px;left:50%;transform:translateX(-50%);width:900px;height:500px;background:radial-gradient(ellipse,rgba(52,211,153,0.08) 0%,transparent 65%);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:64px 24px 80px}
+
+/* Header */
+.brand{display:flex;align-items:center;justify-content:center;margin-bottom:36px}
+.logo{font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.03em}
+.logo .w{color:var(--text)}
+.logo .e{color:var(--emerald)}
+.kicker{text-align:center;font-size:11px;font-weight:600;color:var(--emerald);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:18px}
+h1{text-align:center;font-family:'Geist',sans-serif;font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1.08;letter-spacing:-0.035em;max-width:720px;margin:0 auto 20px}
+h1 .em{color:var(--emerald)}
+.sub{text-align:center;font-size:16px;color:var(--muted);max-width:580px;margin:0 auto 40px;line-height:1.6;font-weight:400}
+
+/* Controls */
+.controls{display:flex;justify-content:center;gap:10px;margin-bottom:36px}
+.ctrl{background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:500;letter-spacing:0.02em;cursor:pointer;transition:all 0.2s}
+.ctrl:hover{border-color:var(--emerald-border);color:var(--emerald)}
+
+/* Phase */
+.phase{}
+.phase-head{display:flex;align-items:center;gap:16px;padding:22px 24px;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:14px 14px 0 0}
+.phase-num{font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;color:var(--emerald);background:var(--emerald-dim);border:1px solid var(--emerald-border);padding:6px 10px;border-radius:6px;letter-spacing:0.08em}
+.phase-title{font-size:18px;font-weight:600;letter-spacing:-0.02em;color:var(--text)}
+.phase-sub{font-size:11px;color:var(--dim);margin-bottom:3px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase}
+.phase-body{background:var(--surface);border:1px solid var(--border);border-top:1px solid rgba(52,211,153,0.12);border-radius:0 0 14px 14px;padding:14px}
+
+/* Node */
+.node{background:linear-gradient(135deg,var(--surface-2),rgba(52,211,153,0.035));border:1px solid var(--emerald-border);border-radius:10px;padding:16px 18px;cursor:pointer;transition:all 0.2s ease;margin-bottom:8px}
+.node:last-child{margin-bottom:0}
+.node:hover{border-color:rgba(52,211,153,0.35);background:linear-gradient(135deg,#222226,rgba(52,211,153,0.06))}
+.n-head{display:flex;align-items:center;gap:14px}
+.n-icon{width:34px;height:34px;border-radius:8px;background:var(--emerald-dim);border:1px solid var(--emerald-border);display:flex;align-items:center;justify-content:center;color:var(--emerald);flex-shrink:0}
+.n-icon svg{width:16px;height:16px}
+.n-title{flex:1;font-size:15px;font-weight:500;color:var(--text);letter-spacing:-0.01em}
+.n-kind{display:inline-block;font-size:9px;font-weight:600;color:var(--dim);border:1px solid var(--border);padding:2px 7px;border-radius:4px;letter-spacing:0.12em;text-transform:uppercase;margin-left:10px;vertical-align:middle;background:rgba(255,255,255,0.02)}
+.n-chev{color:var(--dim);transition:transform 0.25s;flex-shrink:0}
+.n-chev.open{transform:rotate(90deg);color:var(--emerald)}
+.n-desc{font-size:13.5px;color:var(--muted);margin:10px 0 0 48px;line-height:1.6;font-weight:400}
+.n-details{max-height:0;overflow:hidden;transition:max-height 0.35s ease;margin-left:48px}
+.n-details.open{max-height:800px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.n-bullet{font-size:13px;color:var(--muted);padding:5px 0 5px 18px;line-height:1.55;position:relative;font-weight:400}
+.n-bullet::before{content:'';position:absolute;left:0;top:12px;width:5px;height:5px;border-radius:50%;background:var(--emerald);opacity:0.55}
+
+/* Phase connector */
+.connector{display:flex;justify-content:center;padding:6px 0}
+.connector-line{width:1px;height:28px;background:linear-gradient(to bottom,var(--border),var(--emerald-border))}
+
+/* Value section */
+.value{margin-top:56px;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.value-kicker{font-size:11px;font-weight:600;color:var(--emerald);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.value-title{font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-bottom:22px;color:var(--text)}
+.value-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.value-card{padding:18px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
+.value-card h4{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text);letter-spacing:-0.01em}
+.value-card p{font-size:12.5px;color:var(--muted);line-height:1.55;font-weight:400}
+
+/* Optional add-on (BI teaser) */
+.addon{margin-top:16px;padding:28px 32px;background:linear-gradient(135deg,var(--surface),rgba(52,211,153,0.05));border:1px dashed var(--emerald-border);border-radius:14px;display:flex;align-items:center;gap:28px}
+.addon-icon{width:52px;height:52px;border-radius:12px;background:var(--emerald-dim);border:1px solid var(--emerald-border);display:flex;align-items:center;justify-content:center;color:var(--emerald);flex-shrink:0}
+.addon-icon svg{width:24px;height:24px}
+.addon-body{flex:1;min-width:0}
+.addon-kicker{font-size:10px;font-weight:600;color:var(--emerald);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.addon-title{font-size:18px;font-weight:600;letter-spacing:-0.02em;color:var(--text);margin-bottom:8px}
+.addon-desc{font-size:13.5px;color:var(--muted);line-height:1.6;font-weight:400;margin-bottom:14px}
+.addon-tags{display:flex;flex-wrap:wrap;gap:8px}
+.addon-tag{font-size:11px;font-weight:500;color:var(--muted);background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:5px 11px;border-radius:999px;letter-spacing:0.02em}
+
+/* Footer */
+.footer{text-align:center;margin-top:48px;font-size:12px;color:var(--dim);font-weight:400}
+.footer .fb{color:var(--emerald);font-weight:700;font-family:'Outfit',sans-serif}
+.footer .sep{margin:0 10px;opacity:0.4}
+
+@media (max-width:640px){
+  .wrap{padding:44px 16px 60px}
+  .n-desc,.n-details{margin-left:0}
+  .n-details.open{margin-top:12px}
+  .phase-head{padding:18px 18px}
+  .value{padding:24px}
+  .value-grid{grid-template-columns:1fr}
+  .addon{flex-direction:column;align-items:flex-start;padding:24px;gap:18px}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+<div class="wrap">
+
+<div class="brand">
+  <div class="logo"><span class="w">Oxy</span><span class="e">Scale</span></div>
+</div>
+
+<div class="kicker">Property Styling System</div>
+<h1>End-to-End Workflow <span class="em">Automation</span></h1>
+<p class="sub">From the first on-site quote to the final sold notification. One connected system replacing around 80% of manual admin.</p>
+
+<div class="controls">
+  <button class="ctrl" onclick="toggleAll(true)">Expand all</button>
+  <button class="ctrl" onclick="toggleAll(false)">Collapse all</button>
+</div>
+
+<div id="flow"></div>
+
+<div class="value">
+  <div class="value-kicker">The Outcome</div>
+  <div class="value-title">What this unlocks for your business</div>
+  <div class="value-grid">
+    <div class="value-card">
+      <h4>~80% admin removed</h4>
+      <p>Quoting, invoicing, CRM entry, monitoring and follow-up all run themselves, freeing your team to focus on service.</p>
+    </div>
+    <div class="value-card">
+      <h4>Quote on the spot</h4>
+      <p>Your stylists and managing agents generate a bespoke, branded quote from the property. No waiting, no back-and-forth.</p>
+    </div>
+    <div class="value-card">
+      <h4>Zero data re-entry</h4>
+      <p>Every form response, payment and milestone flows straight into your CRM. Nothing copied, nothing missed.</p>
+    </div>
+    <div class="value-card">
+      <h4>Every sale, more value</h4>
+      <p>Sold properties automatically route into upsells, affiliate partners or reviews, compounding revenue from every job.</p>
+    </div>
+  </div>
+</div>
+
+<div class="addon">
+  <div class="addon-icon">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l4-4 4 4 6-6"/><circle cx="7" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="11" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="21" cy="8" r="1.3" fill="currentColor" stroke="none"/></svg>
+  </div>
+  <div class="addon-body">
+    <div class="addon-kicker">Optional Add-On</div>
+    <div class="addon-title">Full Business Intelligence</div>
+    <p class="addon-desc">Layer a live dashboard on top of the system so every quote, invoice, sale and campaign becomes real-time insight. Know exactly how the business is performing, at a glance.</p>
+    <div class="addon-tags">
+      <div class="addon-tag">Revenue & cash flow</div>
+      <div class="addon-tag">Agent performance</div>
+      <div class="addon-tag">Quote conversion</div>
+      <div class="addon-tag">Job volume trends</div>
+      <div class="addon-tag">Paid vs unpaid</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="fb">OxyScale</span><span class="sep">·</span>Built for property stylists who want to scale without the admin
+</div>
+
+</div>
+
+<script>
+var IC = {
+  form:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+  sliders:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h10M17 6h4M3 12h4M11 12h10M3 18h14M19 18h2M15 4v4M9 10v4M17 16v4"/></svg>',
+  spark:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2.5 5.5L21 11l-5.5 2.5L13 19l-2.5-5.5L5 11l5.5-2.5L13 3z"/></svg>',
+  db:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path stroke-linecap="round" d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>',
+  check:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+  invoice:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l2 2 4-4m5 7l-3-2-3 2-3-2-3 2V5a2 2 0 012-2h8a2 2 0 012 2v14z"/></svg>',
+  edit:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>',
+  card:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path stroke-linecap="round" d="M3 10h18M7 15h4"/></svg>',
+  cal:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  play:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><circle cx="12" cy="12" r="9"/></svg>',
+  radar:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><path stroke-linecap="round" d="M12 3v3M21 12h-3M12 21v-3M3 12h3"/></svg>',
+  bell:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>',
+  trophy:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4v2a3 3 0 003 3M17 6h3v2a3 3 0 01-3 3"/></svg>',
+  alert:'<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+};
+
+var DATA = [
+  {
+    num:"01",
+    label:"Capture",
+    title:"On-site quote, branded and instant",
+    nodes:[
+      {kind:"input",icon:"form",title:"Branded Input Form",
+        desc:"Stylists and managing agents pull up a fully branded form on-site and capture every detail they need in one pass.",
+        bullets:["Client and managing agent details","Property address and contact info","Floor plan upload","Works on phone, tablet or laptop"]},
+      {kind:"input",icon:"sliders",title:"Smart Pricing Configurator",
+        desc:"A pricing section built around your specific packages and add-ons, so the person on-site can quote with zero guesswork.",
+        bullets:["Bedroom packages (1BR through 5BR)","Living zones, study, walk-in, butler's pantry toggles","Custom inclusions tailored to your business","Add-ons: flowers, candles, pre-campaign cleans"]},
+      {kind:"action",icon:"spark",title:"Bespoke Quote Generated",
+        desc:"The system instantly produces a designer, on-brand quote and sends it to the client, in front of them, on the spot.",
+        bullets:["Beautifully designed and fully on-brand","Full package description and subtotal","Hire agreement attached","Any selected add-ons flow straight through"]},
+      {kind:"action",icon:"db",title:"CRM Synced: Quoted Stage",
+        desc:"Every field captured on the form is written straight into your CRM as a new lead, tagged at the Quoted stage.",
+        bullets:["Monday.com by default, any CRM supported","Lead placed in Quoted stage automatically","Nothing typed twice, nothing lost"]}
+    ]
+  },
+  {
+    num:"02",
+    label:"Accept",
+    title:"Sign, invoice, done",
+    nodes:[
+      {kind:"trigger",icon:"check",title:"Client Reviews & Signs",
+        desc:"The client opens a beautiful quote, reads the attached hire agreement, and signs digitally, all in one view."},
+      {kind:"action",icon:"invoice",title:"Invoice Generated & Sent",
+        desc:"The moment the quote is accepted, the invoice is built, sent, and logged, with every add-on already included.",
+        bullets:["Generated instantly from the accepted quote","Includes all selected add-ons","CRM moves the lead to the Invoiced stage"]},
+      {kind:"action",icon:"edit",title:"Quote Edit Portal",
+        desc:"Need to change a line item or apply a discount? Search any quote by client email, edit it, and resend in seconds.",
+        bullets:["Full-text search by client email","Edit line items, discounts or add-ons","Resend to the client in one click","CRM auto-updates with the change"]}
+    ]
+  },
+  {
+    num:"03",
+    label:"Schedule",
+    title:"From paid to install day, hands-off",
+    nodes:[
+      {kind:"monitor",icon:"card",title:"Payment Detected",
+        desc:"The system watches for the invoice to clear and flags the lead as paid in your CRM automatically."},
+      {kind:"input",icon:"cal",title:"Install Details Form",
+        desc:"As soon as payment lands, the client is prompted for the information your team actually needs to run the job.",
+        bullets:["Install date","Pickup time","Length of campaign","Responses flow straight into the CRM"]},
+      {kind:"trigger",icon:"play",title:"Install Day → In Progress",
+        desc:"On the install date itself, the lead automatically moves into the In Progress stage. No one has to touch it."}
+    ]
+  },
+  {
+    num:"04",
+    label:"Monitor",
+    title:"Your silent sales assistant",
+    nodes:[
+      {kind:"monitor",icon:"radar",title:"Listing Scanner",
+        desc:"The system begins scanning realestate.com.au for the property the moment the job goes In Progress, and pings you when the listing goes live.",
+        bullets:["Runs automatically in the background","Checks continuously until the listing is detected","You're notified the instant it's live"]},
+      {kind:"monitor",icon:"radar",title:"Sale Scanner",
+        desc:"Once the listing is live, a second scanner takes over, watching for the status change that matters most.",
+        bullets:["Activates only after the listing is detected","Monitors for the sold status","You're notified the moment it sells"]},
+      {kind:"action",icon:"bell",title:"Agent & Team Notifications",
+        desc:"Your managing agent is kept in the loop at every stage you choose, making them look good and building repeat business."}
+    ]
+  },
+  {
+    num:"05",
+    label:"Close-out",
+    title:"Every sale, more value",
+    nodes:[
+      {kind:"action",icon:"trophy",title:"Sold → Congrats + Upsell Routing",
+        desc:"When a property sells, a branded congratulations email goes out, and the lead routes into whatever value-capture flow you want.",
+        bullets:["Branded congratulations email to the client","Affiliate routing (e.g. renovation partners)","Google review prompt","Upsell your own services","Fully customisable per client"]},
+      {kind:"action",icon:"alert",title:"Campaign Ended, No Sale",
+        desc:"If the campaign end date arrives without a sale detected, you're notified immediately and prompted on what to do next.",
+        bullets:["Immediate notification to your team","Prompt to contact the removalist","Optional: system auto-contacts the removalist for you"]}
+    ]
+  }
+];
+
+var flow = document.getElementById('flow');
+var out = '';
+
+DATA.forEach(function(p, pi){
+  if(pi > 0){
+    out += '<div class="connector"><div class="connector-line"></div></div>';
+  }
+  out += '<div class="phase">';
+  out += '<div class="phase-head">';
+  out += '<div class="phase-num">'+p.num+'</div>';
+  out += '<div><div class="phase-sub">'+p.label+'</div><div class="phase-title">'+p.title+'</div></div>';
+  out += '</div>';
+  out += '<div class="phase-body">';
+  p.nodes.forEach(function(n, ni){
+    var id = 'n'+pi+'_'+ni;
+    var hasBullets = n.bullets && n.bullets.length > 0;
+    out += '<div class="node" onclick="toggleNode(\''+id+'\')">';
+    out += '<div class="n-head">';
+    out += '<div class="n-icon">'+IC[n.icon]+'</div>';
+    out += '<div class="n-title">'+n.title+'<span class="n-kind">'+n.kind+'</span></div>';
+    if(hasBullets){
+      out += '<svg class="n-chev" id="c_'+id+'" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+    }
+    out += '</div>';
+    out += '<div class="n-desc">'+n.desc+'</div>';
+    if(hasBullets){
+      out += '<div class="n-details" id="d_'+id+'">';
+      n.bullets.forEach(function(b){ out += '<div class="n-bullet">'+b+'</div>'; });
+      out += '</div>';
+    }
+    out += '</div>';
+  });
+  out += '</div></div>';
+});
+
+flow.innerHTML = out;
+
+function toggleNode(id){
+  var d = document.getElementById('d_'+id);
+  var c = document.getElementById('c_'+id);
+  if(!d) return;
+  d.classList.toggle('open');
+  if(c) c.classList.toggle('open');
+}
+
+function toggleAll(open){
+  document.querySelectorAll('.n-details').forEach(function(d){
+    if(open) d.classList.add('open'); else d.classList.remove('open');
+  });
+  document.querySelectorAll('.n-chev').forEach(function(c){
+    if(open) c.classList.add('open'); else c.classList.remove('open');
+  });
+}
+</script>
+</body>
+</html>
